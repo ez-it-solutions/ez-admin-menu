@@ -49,13 +49,13 @@ class EAM_Admin {
         
         // Load tab files
         require_once EAM_PLUGIN_DIR . 'admin/tabs/class-tab-dashboard.php';
-        require_once EAM_PLUGIN_DIR . 'admin/tabs/class-tab-boards.php';
-        require_once EAM_PLUGIN_DIR . 'admin/tabs/class-tab-items.php';
+        require_once EAM_PLUGIN_DIR . 'admin/tabs/class-tab-menu-visibility.php';
+        require_once EAM_PLUGIN_DIR . 'admin/tabs/class-tab-roles-permissions.php';
         
         // Register tabs
         EAM_Tab_Dashboard::register();
-        EAM_Tab_Boards::register();
-        EAM_Tab_Items::register();
+        EAM_Tab_Menu_Visibility::register();
+        EAM_Tab_Roles_Permissions::register();
     }
     
     /**

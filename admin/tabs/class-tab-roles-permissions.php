@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class EAM_Tab_Items {
+class EAM_Tab_Roles_Permissions {
     
     /**
      * Register tab

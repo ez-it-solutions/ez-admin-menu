@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class EAM_Tab_Boards {
+class EAM_Tab_Menu_Visibility {
     
     /**
      * Register tab
