@@ -1,6 +1,6 @@
 <?php
 /**
- * Menu Items Tab
+ * Roles & Permissions Tab
  * 
  * @package    Ez_Admin_Menu
  * @subpackage Admin
@@ -22,8 +22,8 @@ class EAM_Tab_Items {
      */
     public static function register() {
         EAM_Tab_Controller::register_tab('items', [
-            'label' => __('Menu Items', 'ez-admin-menu'),
-            'icon' => 'dashicons-list-view',
+            'label' => __('Roles & Permissions', 'ez-admin-menu'),
+            'icon' => 'dashicons-admin-users',
             'callback' => [__CLASS__, 'render'],
             'priority' => 30,
         ]);
@@ -33,88 +33,96 @@ class EAM_Tab_Items {
      * Render tab content
      */
     public static function render() {
-        // Get all menu items
-        $items = get_posts([
-            'post_type' => 'eam_menu_item',
-            'posts_per_page' => -1,
-            'orderby' => 'date',
-            'order' => 'DESC',
-        ]);
+        // Get all WordPress roles
+        global $wp_roles;
+        $roles = $wp_roles->roles;
+        $role_names = $wp_roles->get_names();
         
         ?>
-        <h2 class="ezit-page-title"><?php _e('Menu Items', 'ez-admin-menu'); ?></h2>
-        <p class="ezit-description"><?php _e('Manage individual menu items that can be linked to WordPress pages or custom URLs.', 'ez-admin-menu'); ?></p>
+        <h2 class="ezit-page-title"><?php _e('Roles & Permissions Management', 'ez-admin-menu'); ?></h2>
+        <p class="ezit-description"><?php _e('Manage WordPress user roles and their capabilities. Create custom roles or modify existing ones to control what users can do in the admin area.', 'ez-admin-menu'); ?></p>
         
         <div class="ezit-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3>
-                    <span class="dashicons dashicons-list-view"></span>
-                    <?php _e('All Menu Items', 'ez-admin-menu'); ?>
+                    <span class="dashicons dashicons-admin-users"></span>
+                    <?php _e('WordPress Roles', 'ez-admin-menu'); ?>
                 </h3>
-                <a href="<?php echo admin_url('post-new.php?post_type=cmp_menu_item'); ?>" class="ezit-action-btn ezit-action-btn-primary">
+                <button class="ezit-action-btn ezit-action-btn-primary" onclick="cmpShowMessage('Custom role creation coming soon!', 'info')">
                     <span class="dashicons dashicons-plus"></span>
-                    <?php _e('Add New Item', 'ez-admin-menu'); ?>
-                </a>
+                    <?php _e('Create Custom Role', 'ez-admin-menu'); ?>
+                </button>
             </div>
             
-            <?php if (empty($items)): ?>
-                <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
-                    <span class="dashicons dashicons-list-view" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 16px;"></span>
-                    <p style="font-size: 16px; margin: 0;"><?php _e('No menu items found. Create your first menu item!', 'ez-admin-menu'); ?></p>
-                </div>
-            <?php else: ?>
-                <table class="wp-list-table widefat fixed striped" style="margin-top: 20px;">
-                    <thead>
+            <p style="margin-bottom: 20px; color: #6b7280;">
+                <?php _e('Manage user roles and their capabilities. Each role defines what users can and cannot do in WordPress.', 'ez-admin-menu'); ?>
+            </p>
+            
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;"><?php _e('Role Name', 'ez-admin-menu'); ?></th>
+                        <th style="width: 15%;"><?php _e('User Count', 'ez-admin-menu'); ?></th>
+                        <th><?php _e('Key Capabilities', 'ez-admin-menu'); ?></th>
+                        <th style="width: 15%;"><?php _e('Actions', 'ez-admin-menu'); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($role_names as $role_slug => $role_name): 
+                        $role = $roles[$role_slug];
+                        $capabilities = $role['capabilities'];
+                        
+                        // Count users with this role
+                        $user_count = count(get_users(['role' => $role_slug, 'fields' => 'ID']));
+                        
+                        // Get key capabilities
+                        $key_caps = [];
+                        if (isset($capabilities['manage_options']) && $capabilities['manage_options']) {
+                            $key_caps[] = 'Manage Options';
+                        }
+                        if (isset($capabilities['edit_posts']) && $capabilities['edit_posts']) {
+                            $key_caps[] = 'Edit Posts';
+                        }
+                        if (isset($capabilities['publish_posts']) && $capabilities['publish_posts']) {
+                            $key_caps[] = 'Publish Posts';
+                        }
+                        if (isset($capabilities['delete_posts']) && $capabilities['delete_posts']) {
+                            $key_caps[] = 'Delete Posts';
+                        }
+                        
+                        $cap_display = !empty($key_caps) ? implode(', ', array_slice($key_caps, 0, 3)) : __('Limited access', 'ez-admin-menu');
+                        if (count($key_caps) > 3) {
+                            $cap_display .= '...';
+                        }
+                    ?>
                         <tr>
-                            <th style="width: 40%;"><?php _e('Item Name', 'ez-admin-menu'); ?></th>
-                            <th><?php _e('Link Type', 'ez-admin-menu'); ?></th>
-                            <th><?php _e('Link Target', 'ez-admin-menu'); ?></th>
-                            <th><?php _e('Date', 'ez-admin-menu'); ?></th>
-                            <th><?php _e('Actions', 'ez-admin-menu'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($items as $item): 
-                            $link_type = get_post_meta($item->ID, '_cmp_link_type', true);
-                            $link_url = get_post_meta($item->ID, '_cmp_link_url', true);
-                            $link_page = get_post_meta($item->ID, '_cmp_link_page', true);
-                            
-                            $link_type_label = 'None';
-                            $link_target = '—';
-                            
-                            if ($link_type === 'page' && $link_page) {
-                                $link_type_label = 'WordPress Page';
-                                $page = get_post($link_page);
-                                $link_target = $page ? $page->post_title : '—';
-                            } elseif ($link_type === 'url' && $link_url) {
-                                $link_type_label = 'Custom URL';
-                                $link_target = '<a href="' . esc_url($link_url) . '" target="_blank">' . esc_html($link_url) . '</a>';
-                            }
-                        ?>
-                            <tr>
-                                <td>
-                                    <strong>
-                                        <a href="<?php echo get_edit_post_link($item->ID); ?>">
-                                            <?php echo esc_html($item->post_title); ?>
-                                        </a>
-                                    </strong>
-                                </td>
-                                <td><?php echo esc_html($link_type_label); ?></td>
-                                <td><?php echo $link_target; ?></td>
-                                <td><?php echo get_the_date('', $item); ?></td>
-                                <td>
-                                    <a href="<?php echo get_edit_post_link($item->ID); ?>" class="button button-small">
-                                        <?php _e('Edit', 'ez-admin-menu'); ?>
-                                    </a>
-                                    <a href="<?php echo get_delete_post_link($item->ID); ?>" class="button button-small" onclick="return confirm('<?php esc_attr_e('Are you sure you want to delete this item?', 'ez-admin-menu'); ?>');">
+                            <td>
+                                <strong><?php echo esc_html($role_name); ?></strong>
+                                <br>
+                                <code style="font-size: 11px; color: #6b7280;"><?php echo esc_html($role_slug); ?></code>
+                            </td>
+                            <td>
+                                <span style="display: inline-block; background: rgba(163, 230, 53, 0.1); color: #16a34a; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                                    <?php echo $user_count; ?> <?php echo $user_count === 1 ? __('user', 'ez-admin-menu') : __('users', 'ez-admin-menu'); ?>
+                                </span>
+                            </td>
+                            <td style="color: #6b7280; font-size: 13px;">
+                                <?php echo esc_html($cap_display); ?>
+                            </td>
+                            <td>
+                                <button class="button button-small" onclick="cmpShowMessage('Role editing coming soon!', 'info')">
+                                    <?php _e('Edit', 'ez-admin-menu'); ?>
+                                </button>
+                                <?php if (!in_array($role_slug, ['administrator', 'editor', 'author', 'contributor', 'subscriber'])): ?>
+                                    <button class="button button-small" onclick="cmpConfirm('Are you sure you want to delete this custom role?', function() { cmpShowMessage('Role deletion coming soon!', 'info'); })">
                                         <?php _e('Delete', 'ez-admin-menu'); ?>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+                                    </button>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
         <?php
     }

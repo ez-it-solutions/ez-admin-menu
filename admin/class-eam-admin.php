@@ -126,8 +126,25 @@ class EAM_Admin {
         wp_enqueue_style('dashicons');
         wp_enqueue_script('jquery');
         
+        // Enqueue admin CSS
+        wp_enqueue_style(
+            'eam-admin',
+            EAM_PLUGIN_URL . 'assets/css/admin.css',
+            [],
+            EAM_PLUGIN_VERSION
+        );
+        
+        // Enqueue admin JS
+        wp_enqueue_script(
+            'eam-admin',
+            EAM_PLUGIN_URL . 'assets/js/admin.js',
+            ['jquery'],
+            EAM_PLUGIN_VERSION,
+            true
+        );
+        
         // Localize script for AJAX
-        wp_localize_script('jquery', 'cmpAdmin', [
+        wp_localize_script('eam-admin', 'cmpAdmin', [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('EAM_Admin'),
         ]);

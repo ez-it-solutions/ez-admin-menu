@@ -36,7 +36,7 @@ jQuery(document).ready(function() {
     jQuery(window).on('resize', setFullpageHeight);
 });
 
-function eamToggleTheme() {
+function cmpToggleTheme() {
     var button = jQuery('#ezit-theme-toggle');
     var icon = button.find('.ezit-theme-icon');
     var text = button.find('.ezit-theme-text');
@@ -52,7 +52,7 @@ function eamToggleTheme() {
     
     jQuery.post(ajaxurl, {
         action: 'eam_toggle_theme',
-        nonce: eamAdmin.nonce
+        nonce: cmpAdmin.nonce
     }, function(response) {
         if (response.success) {
             // Fade out before reload
@@ -69,7 +69,7 @@ function eamToggleTheme() {
     });
 }
 
-function eamLoadTab(event, tab) {
+function cmpLoadTab(event, tab) {
     event.preventDefault();
     
     // Show loading overlay with current theme
@@ -85,7 +85,7 @@ function eamLoadTab(event, tab) {
 }
 
 // Show message modal
-function eamShowMessage(message, type, callback) {
+function cmpShowMessage(message, type, callback) {
     // Detect current theme
     var isLight = jQuery('.ezit-fullpage').hasClass('ezit-light');
     var themeClass = isLight ? 'ezit-light' : 'ezit-dark';
@@ -129,7 +129,7 @@ function eamShowMessage(message, type, callback) {
 }
 
 // Custom confirmation modal
-function eamConfirm(message, callback) {
+function cmpConfirm(message, callback) {
     // Detect current theme
     var isLight = jQuery('.ezit-fullpage').hasClass('ezit-light');
     var themeClass = isLight ? 'ezit-light' : 'ezit-dark';

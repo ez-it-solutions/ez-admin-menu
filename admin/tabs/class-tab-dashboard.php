@@ -41,31 +41,59 @@ class EAM_Tab_Dashboard {
         <div class="ezit-stats-grid">
             <div class="ezit-stat-card">
                 <div class="ezit-stat-icon">
-                    <span class="dashicons dashicons-welcome-widgets-menus"></span>
+                    <span class="dashicons dashicons-admin-users"></span>
                 </div>
                 <div class="ezit-stat-info">
-                    <div class="ezit-stat-value"><?php echo wp_count_posts('eam_board')->publish; ?></div>
-                    <div class="ezit-stat-label"><?php _e('Boards', 'ez-admin-menu'); ?></div>
+                    <?php 
+                    global $wp_roles;
+                    $role_count = count($wp_roles->get_names());
+                    ?>
+                    <div class="ezit-stat-value"><?php echo $role_count; ?></div>
+                    <div class="ezit-stat-label"><?php _e('User Roles', 'ez-admin-menu'); ?></div>
                 </div>
             </div>
             
             <div class="ezit-stat-card">
                 <div class="ezit-stat-icon">
-                    <span class="dashicons dashicons-list-view"></span>
+                    <span class="dashicons dashicons-visibility"></span>
                 </div>
                 <div class="ezit-stat-info">
-                    <div class="ezit-stat-value"><?php echo wp_count_posts('eam_menu_item')->publish; ?></div>
-                    <div class="ezit-stat-label"><?php _e('Menu Items', 'ez-admin-menu'); ?></div>
+                    <?php
+                    // Count configured roles (roles with hidden menus)
+                    $configured = 0;
+                    foreach ($wp_roles->get_names() as $role_slug => $role_name) {
+                        $hidden = get_option('eam_hidden_menus_' . $role_slug, []);
+                        if (is_array($hidden) && count($hidden) > 0) {
+                            $configured++;
+                        }
+                    }
+                    ?>
+                    <div class="ezit-stat-value"><?php echo $configured; ?></div>
+                    <div class="ezit-stat-label"><?php _e('Configured Roles', 'ez-admin-menu'); ?></div>
                 </div>
             </div>
             
             <div class="ezit-stat-card">
                 <div class="ezit-stat-icon">
-                    <span class="dashicons dashicons-admin-appearance"></span>
+                    <span class="dashicons dashicons-menu"></span>
                 </div>
                 <div class="ezit-stat-info">
-                    <div class="ezit-stat-value">2</div>
-                    <div class="ezit-stat-label"><?php _e('Frame Styles', 'ez-admin-menu'); ?></div>
+                    <?php
+                    global $menu;
+                    $menu_count = is_array($menu) ? count($menu) : 0;
+                    ?>
+                    <div class="ezit-stat-value"><?php echo $menu_count; ?></div>
+                    <div class="ezit-stat-label"><?php _e('Admin Menu Items', 'ez-admin-menu'); ?></div>
+                </div>
+            </div>
+            
+            <div class="ezit-stat-card">
+                <div class="ezit-stat-icon">
+                    <span class="dashicons dashicons-groups"></span>
+                </div>
+                <div class="ezit-stat-info">
+                    <div class="ezit-stat-value"><?php echo count_users()['total_users']; ?></div>
+                    <div class="ezit-stat-label"><?php _e('Total Users', 'ez-admin-menu'); ?></div>
                 </div>
             </div>
         </div>
@@ -77,20 +105,20 @@ class EAM_Tab_Dashboard {
                 <?php _e('Quick Start Guide', 'ez-admin-menu'); ?>
             </h3>
             <ol class="ezit-sidebar-list">
-                <li><?php _e('Create a new Board and add sections with menu items', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Use the shortcode [Ez_Admin_Menu board_id="123"] in any page or post', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Customize the frame style and appearance to match your brand', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Preview your customized admin menu', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Go to Menu Visibility tab to configure which menu items are visible to each role', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Hide unnecessary menu items to simplify the admin interface for clients', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Use Roles & Permissions tab to manage user capabilities', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Test your configuration by logging in as different user roles', 'ez-admin-menu'); ?></li>
             </ol>
             
             <div class="ezit-quick-actions">
-                <a href="<?php echo admin_url('post-new.php?post_type=cmp_board'); ?>" class="ezit-action-btn ezit-action-btn-primary">
-                    <span class="dashicons dashicons-plus"></span>
-                    <?php _e('Create New Board', 'ez-admin-menu'); ?>
+                <a href="<?php echo admin_url('admin.php?page=ez-admin-menu&tab=boards'); ?>" class="ezit-action-btn ezit-action-btn-primary">
+                    <span class="dashicons dashicons-visibility"></span>
+                    <?php _e('Configure Menu Visibility', 'ez-admin-menu'); ?>
                 </a>
-                <a href="<?php echo admin_url('post-new.php?post_type=cmp_menu_item'); ?>" class="ezit-action-btn">
-                    <span class="dashicons dashicons-plus"></span>
-                    <?php _e('Add Menu Item', 'ez-admin-menu'); ?>
+                <a href="<?php echo admin_url('admin.php?page=ez-admin-menu&tab=items'); ?>" class="ezit-action-btn">
+                    <span class="dashicons dashicons-admin-users"></span>
+                    <?php _e('Manage Roles', 'ez-admin-menu'); ?>
                 </a>
             </div>
         </div>
@@ -102,12 +130,12 @@ class EAM_Tab_Dashboard {
                 <?php _e('Features', 'ez-admin-menu'); ?>
             </h3>
             <ul class="ezit-sidebar-list">
-                <li><?php _e('Role-based menu visibility and permissions', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Dynamic sections and menu items', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Link menu items to WordPress pages or custom URLs', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Shortcode support for easy embedding', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Light and dark admin modes', 'ez-admin-menu'); ?></li>
-                <li><?php _e('Responsive design for all devices', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Hide/show admin menu items by user role', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Control admin bar visibility and items', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Manage user roles and capabilities', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Create custom roles with specific permissions', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Simplify admin interface for clients', 'ez-admin-menu'); ?></li>
+                <li><?php _e('Light and dark admin dashboard themes', 'ez-admin-menu'); ?></li>
             </ul>
         </div>
         <?php
